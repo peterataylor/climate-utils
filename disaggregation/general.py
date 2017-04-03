@@ -36,7 +36,7 @@ class PluvioModel(object):
         self.hourly_distribution = hourly_distribution
         self.hourly_patterns = hourly_patterns
 
-    def disaggregate(self,total,timesteps):
+    def disaggregate(self,total,timesteps=24):
         r_bin = self.r_cf.index.get_loc((self.r_cf>np.random.uniform()).argmax())
         r = (self.r_bins[r_bin] + self.r_bins[r_bin+1])/2.0
 
@@ -44,7 +44,7 @@ class PluvioModel(object):
 
         hr_of_max = (np.random.uniform()<self.max_hour_cf).argmax()
         pattern = np.array(self.hourly_patterns[hr_of_max+1])-1
-        return dist[pattern]
+        return dist[pattern].reshape(timesteps,24//timesteps).sum(axis=1)
 
 def load_pluvio(fn):
     widths=[12,4,2,2]+[7]*240
