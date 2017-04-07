@@ -61,14 +61,17 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,
     return pd.DataFrame(all_ts,index=time_period)
 
 
-def awap_ascii_by_year(base_path):
+def awap_ascii_by_year(base_path,fn_pattern,date_format):
+    #fn_pattern='${variable}.${date}${date}.grid',date_format='%Y%m%d'):
     '''
     Data loader AWAP data, stored by year 
     '''
+    fn_template = string.Template(fn_pattern)
     import rasterio
     def loader(variable,date):
-        date_string = date.strftime('%Y%m%d')
-        fn = os.path.join(base_path,str(date.year),'%s.%s%s.grid'%(variable,date_string,date_string))
+        date_string = date.strftime(date_format)
+        fn_base = fn_template.substitute(variable=variable,date=date_string)
+        fn = os.path.join(base_path,str(date.year),fn_base)
         rio = rasterio.open(fn)
         data = rio.read()[0,:,:].astype('d')
         return data,rio.affine
