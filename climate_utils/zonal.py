@@ -1,6 +1,7 @@
 '''
 Routines for generating catchment climate inputs from gridded data
 '''
+from __future__ import print_function
 import rasterstats
 import numpy as np
 import pandas as pd
