@@ -35,9 +35,12 @@ def compute_weighted_mean(data,weights):
     return [np.sum(data[w[0],w[1]] * w[2])/np.sum(w[2]) for w in weights]
 
 def compute_catchment_time_series(variable,catchments,time_period,data_loader,
-                                  column_naming='${catchment}_${variable}',show_progress=True):
+                                  column_naming='${catchment}_${variable}',show_progress=True,
+                                  percent_cover_scale=1000):
     '''
     Build a dataframe of catchment average climate data
+
+
     '''
     template = string.Template(column_naming)
     name_for = lambda x: template.substitute(catchment=x,variable=variable)
@@ -54,7 +57,7 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,
         data,transform = data_loader(variable,ts)
 
         if not weights:
-            weights = compute_weights(catchments,data,transform)
+            weights = compute_weights(catchments,data,transform,percent_cover_scale=percent_cover_scale)
         weighted = compute_weighted_mean(data,weights)
         for i,sc in enumerate(catchments.name):
             all_ts[name_for(sc)].append(weighted[i])
