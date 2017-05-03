@@ -10,8 +10,8 @@ import os
 import sys
 
 def compute_cell_list_and_weights(ref_affine,affine,weights):
-    lng_offset = round((affine[2]-ref_affine[2])/0.05)
-    lat_offset = round((affine[5]-ref_affine[5])/-0.05)
+    lng_offset = int(round((affine[2]-ref_affine[2])/0.05))
+    lat_offset = int(round((affine[5]-ref_affine[5])/-0.05))
     rows,cols=np.where(weights>0)
     weights = weights[rows,cols]
     rows += lat_offset
