@@ -20,14 +20,14 @@ def compute_cell_list_and_weights(ref_affine,affine,weights):
     return rows,cols,weights
 
 
-def compute_weights(catchments,grid,transform,nodata=-99.90000153):
+def compute_weights(catchments,grid,transform,nodata=-99.90000153,percent_cover_scale=1000):
 #    Why do I need to specify nodata? 
 #    fn = 'D:/Geospatial/ACARP/SILO/Rain/1990/19900101_rai.txt'
 #    rio = rasterio.open(fn)
     sample_data = grid
     transform = transform
     stats = rasterstats.zonal_stats(catchments,sample_data,affine=transform,all_touched=True,raster_out=True,
-                                    percent_cover_weighting=True,nodata=nodata,percent_cover_scale=1000)
+                                    percent_cover_weighting=True,nodata=nodata,percent_cover_scale=percent_cover_scale)
     return [compute_cell_list_and_weights(transform,s['mini_raster_affine'],s['mini_raster_percent_cover']) for s in stats]
 
 
