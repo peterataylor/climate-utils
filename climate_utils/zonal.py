@@ -78,6 +78,8 @@ def awap_ascii_by_year(base_path,fn_pattern,date_format):
         fn = os.path.join(base_path,str(date.year),fn_base)
         rio = rasterio.open(fn)
         data = rio.read()[0,:,:].astype('d')
-        return data,rio.affine
+        if rasterio.__version__[0]=='0':
+            return data,rio.affine
+        return data,rio.transform
 
     return loader
