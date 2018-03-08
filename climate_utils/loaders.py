@@ -2,6 +2,36 @@ import string
 import os
 import numpy as np
 
+def _as_template(pattern):
+    if isinstance(pattern,string.Template):
+        return pattern
+    return string.Template(pattern)
+
+def _pattern_substitutions(variable,date):
+    return {
+        'year':date.year,
+        'month':'%02d'%date.month,
+        'day':'%02d'%date.day,
+        'variable':variable
+    }
+
+def ascii_grid_loader(fn_pattern):
+    '''
+    Data loader for ASCII grid data
+    '''
+    fn_template = _as_template(fn_pattern)
+    import rasterio
+    def loader(variable,date):
+        args = _pattern_substitutions(variable,date)
+        fn = fn_template.substitute(**args)
+        rio = rasterio.open(fn)
+        data = rio.read()[0,:,:].astype('d')
+        if rasterio.__version__[0]=='0':
+            return data,rio.affine
+        return data,rio.transform
+
+    return loader
+    
 def awap_ascii_by_year(base_path,fn_pattern,date_format):
     #fn_pattern='${variable}.${date}${date}.grid',date_format='%Y%m%d'):
     '''
@@ -22,10 +52,7 @@ def awap_ascii_by_year(base_path,fn_pattern,date_format):
     return loader
 
 def netcdf_loader(fn_pattern,known_bounds=None):
-    if isinstance(fn_pattern,string.Template):
-        fn_template = fn_pattern
-    else:
-        fn_template = string.Template(fn_pattern)
+    fn_template = _as_template(fn_pattern)
 
     if known_bounds is not None:
         return bounded_netcdf_loader(fn_template,known_bounds)
@@ -86,12 +113,7 @@ def bounded_netcdf_loader(fn_template,known_bounds):
     lat_range = [min_lat,max_lat]
 
     def loader(variable,date):
-        args = {
-            'year':date.year,
-            'month':date.month,
-            'day':date.day,
-            'variable':variable
-        }
+        args = _pattern_substitutions(variable,date)
         fn = fn_template.substitute(**args)
 
         dataset = nc.Dataset(fn,'r')

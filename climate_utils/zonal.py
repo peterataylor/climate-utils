@@ -8,7 +8,7 @@ import pandas as pd
 import string
 import os
 import sys
-from .loaders import awap_ascii_by_year, netcdf_loader
+from .loaders import awap_ascii_by_year, netcdf_loader, ascii_grid_loader
 
 def compute_cell_list_and_weights(ref_affine,affine,weights):
     lng_offset = int(round((affine.c-ref_affine.c)/affine.a))
