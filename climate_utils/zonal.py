@@ -8,6 +8,7 @@ import pandas as pd
 import string
 import os
 import sys
+from .loaders import awap_ascii_by_year, netcdf_loader
 
 def compute_cell_list_and_weights(ref_affine,affine,weights):
     lng_offset = int(round((affine.c-ref_affine.c)/affine.a))
@@ -34,7 +35,7 @@ def compute_weights(catchments,grid,transform,nodata=-99.90000153,percent_cover_
 def compute_weighted_mean(data,weights):
     return [np.sum(data[w[0],w[1]] * w[2])/np.sum(w[2]) for w in weights]
 
-def compute_catchment_time_series(variable,catchments,time_period,data_loader,
+def compute_catchment_time_series(variable,catchments,time_period,data_loader,name_attribute='name',
                                   column_naming='${catchment}_${variable}',show_progress=True,
                                   percent_cover_scale=1000):
     '''
@@ -44,14 +45,13 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,
     '''
     template = string.Template(column_naming)
     name_for = lambda x: template.substitute(catchment=x,variable=variable)
-    all_ts = {name_for(sc):[] for sc in catchments.name}
+    all_ts = {name_for(sc):[] for sc in catchments[name_attribute]}
     weights = None
     for ts in time_period:
-        if show_progress:
-            if ts.month==1 and ts.day==1:
+        if show_progress and ts.day==1:
+            if ts.month==1:
                 print('\n%d'%ts.year,end=' ')
-            else:
-                print('.',end=' ')
+            print(ts.month,end=' ')
             sys.stdout.flush()
         
         data,transform = data_loader(variable,ts)
@@ -59,27 +59,7 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,
         if not weights:
             weights = compute_weights(catchments,data,transform,percent_cover_scale=percent_cover_scale)
         weighted = compute_weighted_mean(data,weights)
-        for i,sc in enumerate(catchments.name):
+        for i,sc in enumerate(catchments[name_attribute]):
             all_ts[name_for(sc)].append(weighted[i])
 
     return pd.DataFrame(all_ts,index=time_period)
-
-
-def awap_ascii_by_year(base_path,fn_pattern,date_format):
-    #fn_pattern='${variable}.${date}${date}.grid',date_format='%Y%m%d'):
-    '''
-    Data loader AWAP data, stored by year 
-    '''
-    fn_template = string.Template(fn_pattern)
-    import rasterio
-    def loader(variable,date):
-        date_string = date.strftime(date_format)
-        fn_base = fn_template.substitute(variable=variable,date=date_string)
-        fn = os.path.join(base_path,str(date.year),fn_base)
-        rio = rasterio.open(fn)
-        data = rio.read()[0,:,:].astype('d')
-        if rasterio.__version__[0]=='0':
-            return data,rio.affine
-        return data,rio.transform
-
-    return loader
