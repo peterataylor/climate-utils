@@ -27,3 +27,10 @@ pip uninstall climate-utils
 pip install https://github.com/flowmatters/climate-utils/archive/master.zip
 ```
 
+**Note:** The areal average time series relies on a fork of the python-rasterstats package - if you already have python-rasterstats you'll need to replace it:
+
+```
+pip uninstall python-rasterstats
+pip install https://github.com/joelrahman/python-rasterstats/archive/percent_cover.zip
+```
+
