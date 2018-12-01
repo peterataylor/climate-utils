@@ -75,6 +75,9 @@ def _x_var(dataset):
 
 def _find_slice(dim_range,dimension_variable):
     data = dimension_variable[...]
+    if (max(dim_range) > max(data)) or (min(dim_range) < min(data)):
+        raise Exception('Out of bounds. Dimension %s does not cover required range'%dimension_variable.name)
+
     if data[0] > data[-1]:
         start = np.argmin(dim_range[0]<data)
         end = np.argmax(data<dim_range[1]) -1
