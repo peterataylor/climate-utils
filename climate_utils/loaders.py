@@ -133,10 +133,13 @@ def bounded_netcdf_loader(fn_template,known_bounds):
             x_slice = _find_slice(lon_range,x_var)
             y_slice = _find_slice(lat_range,y_var)
 
-            y_slice = (y_slice[1],y_slice[0],-y_slice[2])
+            y_slice = (y_slice[1]-1,y_slice[0]-1,-y_slice[2])
+            if y_slice[1] < 0: y_slice[1] = None
+            if y_slice[0] < 0: y_slice[0] = None
 
             arr = dataset.variables[variable][ix,slice(*y_slice),slice(*x_slice)] 
             affine = _affine_from_nc(x_var,x_slice,y_var,y_slice)
+
             return arr,affine
         finally:
             dataset.close()
