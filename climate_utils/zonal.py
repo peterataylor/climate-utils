@@ -32,12 +32,18 @@ def compute_weights(catchments,grid,transform,nodata=-99.90000153,percent_cover_
     return [compute_cell_list_and_weights(transform,s['mini_raster_affine'],s['mini_raster_percent_cover']) for s in stats]
 
 
-def compute_weighted_mean(data,weights):
-    return [np.sum(data[w[0],w[1]] * w[2])/np.sum(w[2]) for w in weights]
+def compute_weighted_mean(data,weights,nodata):
+    orig_len = [len(w[0]) for w in weights]
+
+    subsets = [data[w[0],w[1]] for w in weights]
+    subset_weights = [w[2][np.where(subsets[i]!=nodata)] for i,w in enumerate(weights)]
+
+    subsets = [s[np.where(s!=nodata)] for s in subsets]
+    return [np.sum(s)/np.sum(w) for s,w in zip(subsets,subset_weights)]
 
 def compute_catchment_time_series(variable,catchments,time_period,data_loader,name_attribute='name',
                                   column_naming='${catchment}_${variable}',show_progress=True,
-                                  percent_cover_scale=1000):
+                                  percent_cover_scale=1000,nodata=np.nan):
     '''
     Build a dataframe of catchment average climate data
 
@@ -63,7 +69,7 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
 
         if not weights:
             weights = compute_weights(catchments,data,transform,percent_cover_scale=percent_cover_scale)
-        weighted = compute_weighted_mean(data,weights)
+        weighted = compute_weighted_mean(data,weights,nodata)
         for i,sc in enumerate(catchments[name_attribute]):
             all_ts[name_for(sc)].append(weighted[i])
 
