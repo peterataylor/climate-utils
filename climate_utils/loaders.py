@@ -73,7 +73,7 @@ def _y_var(dataset):
     return _first_var(dataset,['lat','latitude','y'])
 
 def _x_var(dataset):
-    return _first_var(dataset,['lng','longitude','lon'])
+    return _first_var(dataset,['lng','longitude','lon','x'])
 
 def _find_slice(dim_range,dimension_variable):
     data = dimension_variable[...]
@@ -157,16 +157,21 @@ def whole_grid_netcdf_loader(fn_template):
 
         dataset = nc.Dataset(fn,'r')
         try:
-            ix = nc.date2index(date,_time_var(dataset),select='exact')
             x_var = _x_var(dataset)
             y_var = _y_var(dataset)
 
             x_slice = _find_slice(sorted(x_var[...][[0,-1]]),x_var)
             y_slice = _find_slice(sorted(y_var[...][[0,-1]]),y_var)
 
-            arr = dataset.variables[variable][ix,slice(*y_slice),slice(*x_slice)] 
+            time_var = _time_var(dataset)
+            if time_var is None:
+                arr = dataset.variables[variable][slice(*y_slice),slice(*x_slice)] 
+            else:
+                ix = nc.date2index(date,time_var,select='exact')
+                arr = dataset.variables[variable][ix,slice(*y_slice),slice(*x_slice)] 
             affine = _affine_from_nc(x_var,x_slice,y_var,y_slice)
             return arr,affine
         finally:
             dataset.close()
     return loader
+
