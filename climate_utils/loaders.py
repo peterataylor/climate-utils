@@ -160,6 +160,9 @@ def whole_grid_netcdf_loader(fn_template):
             x_var = _x_var(dataset)
             y_var = _y_var(dataset)
 
+            x_var.set_auto_mask(False)
+            y_var.set_auto_mask(False)
+
             x_slice = _find_slice(sorted(x_var[...][[0,-1]]),x_var)
             y_slice = _find_slice(sorted(y_var[...][[0,-1]]),y_var)
 
