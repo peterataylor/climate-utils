@@ -12,6 +12,8 @@ def _pattern_substitutions(variable,date):
         'year':date.year,
         'month':'%02d'%date.month,
         'day':'%02d'%date.day,
+        'hour':'%02d'%date.hour,
+        'minute':'%02d'%date.minute,
         'variable':variable
     }
 
@@ -149,12 +151,8 @@ def whole_grid_netcdf_loader(fn_template):
     import netCDF4 as nc
 
     def loader(variable,date):
-        args = {
-            'year':date.year,
-            'month':date.month,
-            'day':date.day,
-            'variable':variable
-        }
+        args = _pattern_substitutions(variable,date)
+
         fn = fn_template.substitute(**args)
 
         dataset = nc.Dataset(fn,'r')
