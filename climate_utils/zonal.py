@@ -53,8 +53,9 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
     name_for = lambda x: template.substitute(catchment=x,variable=variable)
     all_ts = {name_for(sc):[] for sc in catchments[name_attribute]}
     weights = None
+    last_day = -1
     for ts in time_period:
-        if show_progress and ts.day==1:
+        if show_progress and (ts.day==1) and (ts.day != last_day):
             if ts.month==1:
                 print('\n%d'%ts.year,end=' ')
             print(ts.month,end=' ')
