@@ -53,8 +53,13 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
                 print('\n%d'%ts.year,end=' ')
             print(ts.month,end=' ')
             sys.stdout.flush()
-        
-        data,transform = data_loader(variable,ts)
+        last_day = ts.day
+        resp = data_loader(variable,ts)
+        if resp is None:
+            for i,sc in enumerate(catchments[name_attribute]):
+                all_ts[name_for(sc)].append(np.nan)
+            continue
+        data,transform = resp
 
         if not weights:
             weights = compute_weights(catchments,data,transform,percent_cover_scale=percent_cover_scale)
