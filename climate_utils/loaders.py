@@ -76,7 +76,7 @@ def _x_var(dataset):
     return _first_var(dataset,['lng','longitude','lon','x'])
 
 def _find_slice(dim_range,dimension_variable):
-    data = dimension_variable[...]
+    data = np.array(dimension_variable)#[...]
     if (max(dim_range) > max(data)) or (min(dim_range) < min(data)):
         raise Exception('Out of bounds. Dimension %s does not cover required range'%dimension_variable.name)
 
@@ -105,8 +105,8 @@ def _affine_from_nc(x_var,x_slice,y_var,y_slice):
     x_size, x_0, x_step = _affine_dim(x_var,x_slice)
     y_size, y_0, y_step = _affine_dim(y_var,y_slice)
 
-    return Affine(x_step*x_size,0,x_var[x_0],
-                  0,y_step*y_size,y_var[y_0])
+    return Affine(x_step*x_size,0,np.array(x_var)[x_0],
+                  0,y_step*y_size,np.array(y_var)[y_0])
 
 
 def bounded_netcdf_loader(fn_template,known_bounds):
