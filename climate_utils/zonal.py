@@ -20,7 +20,6 @@ def compute_cell_list_and_weights(ref_affine,affine,weights):
     assert len(rows)==len(weights)
     return rows,cols,weights
 
-
 def compute_weights(catchments,grid,transform,nodata=-99.90000153,percent_cover_scale=1000):
 #    Why do I need to specify nodata? 
 #    fn = 'D:/Geospatial/ACARP/SILO/Rain/1990/19900101_rai.txt'
@@ -31,15 +30,13 @@ def compute_weights(catchments,grid,transform,nodata=-99.90000153,percent_cover_
                                     percent_cover_weighting=True,nodata=nodata,percent_cover_scale=percent_cover_scale)
     return [compute_cell_list_and_weights(transform,s['mini_raster_affine'],s['mini_raster_percent_cover']) for s in stats]
 
-
 def compute_weighted_mean(data,weights,nodata):
-    orig_len = [len(w[0]) for w in weights]
-
     subsets = [data[w[0],w[1]] for w in weights]
     subset_weights = [w[2][np.where(subsets[i]!=nodata)] for i,w in enumerate(weights)]
 
     subsets = [s[np.where(s!=nodata)] for s in subsets]
-    return [np.sum(s)/np.sum(w) for s,w in zip(subsets,subset_weights)]
+    weighted_subsets = [s*w for s,w in zip(subsets,subset_weights)]
+    return [np.sum(s)/np.sum(w) for s,w in zip(weighted_subsets,subset_weights)]
 
 def compute_catchment_time_series(variable,catchments,time_period,data_loader,name_attribute='name',
                                   column_naming='${catchment}_${variable}',show_progress=True,
@@ -64,7 +61,8 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
         resp = data_loader(variable,ts)
         if resp is None:
             for i,sc in enumerate(catchments[name_attribute]):
-                all_ts[name_for(sc)].append(np.nan)
+                col = name_for(sc)
+                all_ts[col].append(np.nan)
             continue
         data,transform = resp
 
@@ -72,6 +70,7 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
             weights = compute_weights(catchments,data,transform,percent_cover_scale=percent_cover_scale)
         weighted = compute_weighted_mean(data,weights,nodata)
         for i,sc in enumerate(catchments[name_attribute]):
-            all_ts[name_for(sc)].append(weighted[i])
+            col = name_for(sc)
+            all_ts[col].append(weighted[i])
 
     return pd.DataFrame(all_ts,index=time_period)
