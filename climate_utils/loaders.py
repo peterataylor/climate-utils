@@ -17,6 +17,24 @@ def _pattern_substitutions(variable,date):
         'variable':variable
     }
 
+def filled_loader(inner_loader,eq={},lt={},gt={}):
+
+    def loader(variable,date):
+        data, affine = inner_loader(variable,date)
+
+        for k,v in eq.items():
+            data[data==k] = v
+
+        for k,v in lt.items():
+            data[data<k] = v
+
+        for k,v in gt.items():
+            data[data>k] = v
+
+        return data,affine
+
+    return loader
+
 def ascii_grid_loader(fn_pattern):
     '''
     Data loader for ASCII grid data
