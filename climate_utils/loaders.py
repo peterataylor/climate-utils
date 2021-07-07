@@ -92,8 +92,9 @@ def netcdf_loader(fn_pattern,known_bounds=None):
             else:
                 ix = _nc_date_index(date,time_var)
                 arr = dataset.variables[variable][ix,y_slice,x_slice]
-            affine = _affine_from_nc(x_var[x_slice],y_var[y_slice])
-
+            affine, flip = _affine_from_nc(x_var[x_slice],y_var[y_slice])
+            if flip:
+                arr = arr[::-1,:]
             return arr,affine
         finally:
             dataset.close()
@@ -146,10 +147,14 @@ def _affine_dim(v):
 def _affine_from_nc(x_var,y_var):
     from affine import Affine
     x_size, x_0 = _affine_dim(x_var)
-    y_size, y_0 = _affine_dim(y_var)
 
+    flip = False
+    if y_var[1] > y_var[0]:
+        y_var = y_var[::-1]
+        flip = True
+    y_size, y_0 = _affine_dim(y_var)
     return Affine(x_size,0,x_0,
-                  0,y_size,y_0)
+                  0,y_size,y_0),flip
 
 def _nc_date_index(date,nc_time_var):
     import netCDF4 as nc
