@@ -20,8 +20,12 @@ def _pattern_substitutions(variable,date):
 def filled_loader(inner_loader,eq={},lt={},gt={}):
 
     def loader(variable,date):
-        data, affine = inner_loader(variable,date)
+        res = inner_loader(variable,date)
 
+        if res is None:
+            return None
+
+        data, affine = res
         for k,v in eq.items():
             data[data==k] = v
 
