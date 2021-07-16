@@ -187,6 +187,29 @@ def _nc_date_index(date,nc_time_var):
 
     return nc.date2index(date,nc_time_var,select='exact')
 
+def xarray_loader(files_to_use):
+    import xarray as xr
+    import pandas as pd
+    dataset = xr.open_mfdataset(files_to_use)
+    x_var = _x_var(dataset)
+    x_var_arr = np.array(x_var)
+
+    y_var = _y_var(dataset)
+    y_var_arr = np.array(y_var)
+
+    affine, flip = _affine_from_nc(x_var_arr,y_var_arr)
+
+    def loader(variable,ts):
+        ts = pd.to_datetime(ts)
+        data = dataset[variable].loc[ts,:,:]
+
+        if flip:
+            data = data[::-1,:]
+
+        return np.array(data),affine
+
+    return loader,pd.to_datetime(np.array(dataset.time))
+
 # def bounded_netcdf_loader(fn_template,known_bounds):
 #     import netCDF4 as nc
 #     if hasattr(known_bounds,'total_bounds'):
