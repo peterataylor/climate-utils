@@ -95,7 +95,5 @@ def test_xa():
   assert time_period[0].hour==18
 
   data, affine = loader('accum_evap',DUMMY_DATE)
-  print(data.dtype)
-  print(data.__class__)
   check_vals(data,affine,XA_TEST_POINTS)
 
