@@ -9,6 +9,8 @@ import string
 import os
 import sys
 from .loaders import awap_ascii_by_year, netcdf_loader, ascii_grid_loader
+import logging
+logger = logging.getLogger(__name__)
 
 def compute_cell_list_and_weights(ref_affine,affine,weights):
     lng_offset = int(round((affine.c-ref_affine.c)/affine.a))
@@ -53,6 +55,7 @@ def compute_catchment_time_series(variable,catchments,time_period,data_loader,na
     last_day = -1
     for ts in time_period:
         if show_progress and (ts.day==1) and (ts.day != last_day):
+            logger.info(f'{ts.year}/{ts.month}')
             if ts.month==1:
                 print('\n%d'%ts.year,end=' ')
             print(ts.month,end=' ')
