@@ -45,8 +45,8 @@ setup(
         zip_safe=True,
         test_suite = 'nose.collector',
         install_requires=[
-            'numpy',
-            'pandas'
+            'numpy==1.16.0',
+            'pandas==0.25.3'
         ],
         extras_require={
             'test': ['pytest'],
